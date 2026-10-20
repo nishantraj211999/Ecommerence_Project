@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 public class CategoryController {
     private CategoryService categoryService;
 
@@ -20,24 +21,35 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @GetMapping("/api/public/categories")
-    public List<Category>getAllCategories(){
-        return categoryService.getAllCategories();
+    @GetMapping("/public/categories")
+    public ResponseEntity<List<Category>>getAllCategories(){
+        return new ResponseEntity<>(categoryService.getAllCategories(), HttpStatus.OK);
     }
 
-    @PostMapping("/api/public/categories")
-    public String createCategory(@RequestBody Category category){
+    @PostMapping("/public/categories")
+    public ResponseEntity<String> createCategory(@RequestBody Category category){
         categoryService.createCategory(category);
-        return "Categories added successfully";
+        return new ResponseEntity<>("Categories added successfully", HttpStatus.OK);
     }
 
-    @DeleteMapping("/api/admin/categories/{categoryID}")
+    @DeleteMapping("/admin/categories/{categoryID}")
     public ResponseEntity<String> deleteCategory(@PathVariable Long categoryID){
         try {
             String status = categoryService.deleteCategory(categoryID);
             return new ResponseEntity<>(status, HttpStatus.OK);
         }
         catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getReason(), e.getStatusCode());
+        }
+    }
+
+    @PutMapping("/public/categories/{categoryID}")
+    public ResponseEntity<String>updateCategory(@RequestBody Category category, @PathVariable Long categoryID){
+        try{
+            Category savedCategory=categoryService.updateCategory(category,categoryID);
+            return new ResponseEntity<>("Update successful", HttpStatus.OK);
+        }
+        catch (ResponseStatusException e){
             return new ResponseEntity<>(e.getReason(), e.getStatusCode());
         }
     }
